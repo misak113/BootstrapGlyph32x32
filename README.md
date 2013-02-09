@@ -12,5 +12,5 @@ Images are downloaded as free from glyphicons.com and license is under it's own.
 
 Instalation
 -
-You can copy only `build` directory to root of your project and include style sheet line into <HEAD/> of your HTML file.
-`<link rel="stylesheet" href="css/bootstrap.icon-large.css" />`
+You can copy only `build` directory to root of your project and include style sheet line into \<HEAD/\> of your HTML file.
+`\<link rel="stylesheet" href="css/bootstrap.icon-large.css" /\>`
