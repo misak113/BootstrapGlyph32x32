@@ -11,7 +11,7 @@ header('content-type: text/css');
 
 $dir = scandir(__DIR__.'/imgs');
 
-/* icon-large */
+/* icon-large * /
 $cols = 10;
 $height = $width = 32;
 $dx = 48.0;
@@ -47,17 +47,17 @@ $x = $y = 0;
 $prefix = '.icon-mini';
 $xStart = 463+347+232;
 /**/
-/* icon-new * /
+/* icon-new */
 $cols = 10;
 $height = $width = 14;
 $dx = 21.0;
 $dy = 21.0;
 $x = $y = 0;
 $prefix = '.icon-new';
-$xStart = 463+347+232+174;
+$xStart = 0;//463+347+232+174;
 /**/
 
-echo $prefix.' { background-image: url("../img/glyphicons-large-compact.png"); width: '.$width.'px; height: '.$height.'px; }';
+echo $prefix.' { background-image: url("../img/glyphicons-new-compact.png"); width: '.$width.'px; height: '.$height.'px; }';
 echo "\n";
 
 $i = 0;
