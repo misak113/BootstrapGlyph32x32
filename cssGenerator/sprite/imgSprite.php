@@ -29,7 +29,7 @@ $dx = 36.0;
 $dy = 36.0;
 $x = $y = 0;
 $prefix = '.icon-medium';
-$xStart = 463;
+$xStart = 0;
 /**/
 /* icon-standard * /
 $cols = 10;
@@ -59,12 +59,24 @@ $prefix = '.icon-new';
 $xStart = 0;//463+347+232+174;
 /**/
 
+function imagetransparent($width, $height) {
+	$trans = @imagecreatefrompng(__DIR__.'/transparent.png');
+	list($old_width, $old_height) = getimagesize(__DIR__.'/transparent.png');
+	$trans2 = imagecreatetruecolor($width, $height);
+	// Resize
+	$resized = imagecopyresized($trans2, $trans, 0, 0, 0, 0, $width, $height, $old_width, $old_height);
+	imagecolortransparent($trans2, imagecolorallocate($trans2, 0,0,0));
+	return $trans2;
+}
+//header('content-type: image/png');
+//imagepng(imagetransparent(100, 100));die();
+
 $ob = ob_start();
 
 echo $prefix.' { background-image: url("../img/'.$spriteImageName.'.png"); width: '.$width.'px; height: '.$height.'px; }';
 echo "\n";
 
-$img = imagecreatetruecolor($cols*$dx+$xStart, (round(count($dir)/$cols)+1)*$dy );
+$img = imagetransparent($cols*$dx+$xStart, (round(count($dir)/$cols)+1)*$dy);
 
 $i = 0;
 foreach ($dir as $file) {
@@ -80,11 +92,14 @@ foreach ($dir as $file) {
 	$newwidth = $width;
 	$newheight = $height;
 	// Load
-	$thumbIcon = imagecreatetruecolor($newwidth, $newheight);
-	// Resize
-	$resized = imagecopyresized($thumbIcon, $icon, 0, 0, 0, 0, $newwidth, $newheight, $old_width, $old_height);
+	if (true || $newwidth != $old_width) {
+		$thumbIcon = imagetransparent($newwidth, $newheight);
+		// Resize
+		$resized = imagecopyresized($thumbIcon, $icon, 0, 0, 0, 0, $newwidth, $newheight, $old_width, $old_height);
+		$icon = $thumbIcon;
+	}
 	// append
-	$merged = imagecopymerge($img, $thumbIcon, $newX, $newY, 0, 0, $newwidth, $newheight, 100);
+	$merged = imagecopymerge($img, $icon, $newX, $newY, 0, 0, $newwidth, $newheight, 100);
 
 	preg_match('~^\d+_(.+).png$~', $file, $m);
 	if (!isset($m[1])) { continue; }
