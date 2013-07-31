@@ -11,7 +11,9 @@ header('content-type: text/css');
 
 $dir = scandir(__DIR__.'/imgs');
 
-/* icon-large * /
+$spriteImageName = 'android-iconography-medium';
+$spriteCssName = 'android-iconography-medium';
+/* icon-large */
 $cols = 10;
 $height = $width = 32;
 $dx = 48.0;
@@ -47,7 +49,7 @@ $x = $y = 0;
 $prefix = '.icon-mini';
 $xStart = 463+347+232;
 /**/
-/* icon-new */
+/* icon-new * /
 $cols = 10;
 $height = $width = 14;
 $dx = 21.0;
@@ -57,17 +59,39 @@ $prefix = '.icon-new';
 $xStart = 0;//463+347+232+174;
 /**/
 
-echo $prefix.' { background-image: url("../img/glyphicons-new-compact.png"); width: '.$width.'px; height: '.$height.'px; }';
+$ob = ob_start();
+
+echo $prefix.' { background-image: url("../img/'.$spriteImageName.'.png"); width: '.$width.'px; height: '.$height.'px; }';
 echo "\n";
+
+$img = imagecreatetruecolor($cols*$dx+$xStart, (round(count($dir)/$cols)+1)*$dy );
 
 $i = 0;
 foreach ($dir as $file) {
-	preg_match('~^.+_\d+_(.+).png$~', $file, $m);
+	$filename = __DIR__.'/imgs/'.$file;
+	$newX = round(($x-2+$xStart));
+	$newY = round(($y-3));
+	// image
+	$icon = @imagecreatefrompng($filename);
+	if (!$icon) continue;
+
+	// Get new sizes
+	list($old_width, $old_height) = getimagesize($filename);
+	$newwidth = $width;
+	$newheight = $height;
+	// Load
+	$thumbIcon = imagecreatetruecolor($newwidth, $newheight);
+	// Resize
+	$resized = imagecopyresized($thumbIcon, $icon, 0, 0, 0, 0, $newwidth, $newheight, $old_width, $old_height);
+	// append
+	$merged = imagecopymerge($img, $thumbIcon, $newX, $newY, 0, 0, $newwidth, $newheight, 100);
+
+	preg_match('~^\d+_(.+).png$~', $file, $m);
 	if (!isset($m[1])) { continue; }
 	$name = $m[1];
 	$name = str_replace('_', '-', $name);
 
-	echo $prefix.'.icon-'.$name.' { background-position: '.round(-($x-2+$xStart)).'px '.round(-($y-3)).'px; }';
+	echo $prefix.'.icon-'.$name.' { background-position: '.(-$newX).'px '.(-$newY).'px; }';
 	echo "\n";
 
 	$x = $x + $dx;
@@ -78,3 +102,13 @@ foreach ($dir as $file) {
 		$y = $y + $dy;
 	}
 }
+$css = ob_get_clean();
+
+file_put_contents('./'.$spriteCssName.'.css', $css);
+
+//header('content-type: image/png');
+//imagepng($img);die();
+$saved = imagepng($img, './'.$spriteImageName.'.png');
+
+if ($saved) echo 'sprite vytvořen';
+else echo 'nastala chyba';
