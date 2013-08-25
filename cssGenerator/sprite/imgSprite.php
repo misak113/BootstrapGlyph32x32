@@ -7,7 +7,10 @@
  * To change this template use File | Settings | File Templates.
  */
 
-header('content-type: text/css');
+//header('content-type: text/css');
+
+//define('__DIR__', '.');
+
 
 $dir = scandir(__DIR__.'/imgs');
 
@@ -60,21 +63,14 @@ $xStart = 0;//463+347+232+174;
 /**/
 
 function imagetransparent($width, $height) {
-	$trans = @imagecreatefrompng(__DIR__.'/transparent.png');
-	list($old_width, $old_height) = getimagesize(__DIR__.'/transparent.png');
-	$trans2 = imagecreatetruecolor($width, $height);
-	// Resize
-	$resized = imagecopyresized($trans2, $trans, 0, 0, 0, 0, $width, $height, $old_width, $old_height);
-	imagecolortransparent($trans2, imagecolorallocate($trans2, 0,0,0));
-	return $trans2;
+	$trans = new Imagick(__DIR__.'/transparent.png');
+	$trans->adaptiveResizeImage($width, $height);
+	return $trans;
 }
-//header('content-type: image/png');
-//imagepng(imagetransparent(100, 100));die();
 
-$ob = ob_start();
 
-echo $prefix.' { background-image: url("../img/'.$spriteImageName.'.png"); width: '.$width.'px; height: '.$height.'px; }';
-echo "\n";
+$echo = $prefix.' { background-image: url("../img/'.$spriteImageName.'.png"); width: '.$width.'px; height: '.$height.'px; }';
+$echo.= "\n";
 
 $img = imagetransparent($cols*$dx+$xStart, (round(count($dir)/$cols)+1)*$dy);
 
@@ -84,30 +80,22 @@ foreach ($dir as $file) {
 	$newX = round(($x-2+$xStart));
 	$newY = round(($y-3));
 	// image
-	$icon = @imagecreatefrompng($filename);
-	if (!$icon) continue;
+	try {
+		$icon = new Imagick($filename);
+	} catch (Exception $e) { continue; }
 
-	// Get new sizes
-	list($old_width, $old_height) = getimagesize($filename);
-	$newwidth = $width;
-	$newheight = $height;
-	// Load
-	if (true || $newwidth != $old_width) {
-		$thumbIcon = imagetransparent($newwidth, $newheight);
-		// Resize
-		$resized = imagecopyresized($thumbIcon, $icon, 0, 0, 0, 0, $newwidth, $newheight, $old_width, $old_height);
-		$icon = $thumbIcon;
-	}
+	$icon->adaptiveResizeImage($width, $height);
 	// append
-	$merged = imagecopymerge($img, $icon, $newX, $newY, 0, 0, $newwidth, $newheight, 100);
+	$img->compositeImage($icon, Imagick::COMPOSITE_DSTIN, $newX, $newY);
 
+	// CSS prepare
 	preg_match('~^\d+_(.+).png$~', $file, $m);
 	if (!isset($m[1])) { continue; }
 	$name = $m[1];
 	$name = str_replace('_', '-', $name);
 
-	echo $prefix.'.icon-'.$name.' { background-position: '.(-$newX).'px '.(-$newY).'px; }';
-	echo "\n";
+	$echo.= $prefix.'.icon-'.$name.' { background-position: '.(-$newX).'px '.(-$newY).'px; }';
+	$echo.= "\n";
 
 	$x = $x + $dx;
 	$i++;
@@ -117,13 +105,11 @@ foreach ($dir as $file) {
 		$y = $y + $dy;
 	}
 }
-$css = ob_get_clean();
+$css = $echo;
 
 file_put_contents('./'.$spriteCssName.'.css', $css);
 
-//header('content-type: image/png');
-//imagepng($img);die();
-$saved = imagepng($img, './'.$spriteImageName.'.png');
+$saved = $img->writeImage('./'.$spriteImageName.'.png');
 
 if ($saved) echo 'sprite vytvořen';
 else echo 'nastala chyba';
