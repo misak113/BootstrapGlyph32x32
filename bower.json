@@ -1,0 +1,23 @@
+{
+  "name": "bootstrap.icon",
+  "version": "0.1.0",
+  "homepage": "https://github.com/misak113/BootstrapGlyph32x32",
+  "authors": [
+    "Michael Zabka <zabka.michael@seznam.cz>"
+  ],
+  "description": "icons for twitter bootstrap android and other",
+  "keywords": [
+    "bootstrap.icon",
+    "icons",
+    "android-icongraphy",
+    "glyphicons"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
