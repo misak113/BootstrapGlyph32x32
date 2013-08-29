@@ -9,7 +9,8 @@
 
 header('content-type: text/css');
 
-$dir = scandir(__DIR__.'/imgs');
+$baseDir = __DIR__.'/imgs/';
+$dir = scandir($baseDir);
 
 $spriteImageName = 'android-iconography-medium';
 $spriteCssName = 'android-iconography-medium';
@@ -80,7 +81,7 @@ $img = imagetransparent($cols*$dx+$xStart, (round(count($dir)/$cols)+1)*$dy);
 
 $i = 0;
 foreach ($dir as $file) {
-	$filename = __DIR__.'/imgs/'.$file;
+	$filename = $baseDir.$file;
 	$newX = round(($x-2+$xStart));
 	$newY = round(($y-3));
 	// image
