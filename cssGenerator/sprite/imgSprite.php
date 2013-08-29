@@ -136,7 +136,7 @@ function sprite($spriteImageName, $spriteCssName, $cols, $height, $width, $dx, $
 
 	$dir = scandir(BASE_DIR.$src);
 
-	$table.= '<table><thead><tr><th colspan="'.$cols.'">'.$prefix.'</th></tr></thead><tbody><tr>';
+	$table.= '<table><thead><tr><th colspan="'.$cols.'">'.$spriteCssName.' '.$prefix.'</th></tr></thead><tbody><tr>';
 	$ob = ob_start();
 
 	$background = 'background-image: url("../img/'.$spriteImageName.'.png");';
@@ -160,9 +160,9 @@ function sprite($spriteImageName, $spriteCssName, $cols, $height, $width, $dx, $
 				$icon = new Imagick($filename);
 			} catch (Exception $e) { continue; }
 
-			$icon->adaptiveResizeImage($width, $height);
+			$icon->adaptiveResizeImage($width, $height, true);
 			// append
-			$img->compositeImage($icon, Imagick::COMPOSITE_DSTIN, $newX, $newY);
+			$img->compositeImage($icon, Imagick::COMPOSITE_OVERLAY, $newX, $newY);
 
 		} else {
 			// image
@@ -211,7 +211,7 @@ function sprite($spriteImageName, $spriteCssName, $cols, $height, $width, $dx, $
 	$links.= '<link rel="stylesheet" href="./css/'.$spriteCssName.'.css" />';
 
 	if (class_exists('Imagick')) 
-		$saved = $img->writeImage('./'.$spriteImageName.'.png');
+		$saved = $img->writeImage(BUILD_DIR.'img/'.$spriteImageName.'.png');
 	else
 		$saved = imagepng($img, BUILD_DIR.'img/'.$spriteImageName.'.png');
 
