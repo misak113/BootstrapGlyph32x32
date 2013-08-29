@@ -29,6 +29,22 @@ $types = array(
 		'xStart' => 0,
 	),
 /**/
+/* android icon-large light */
+	array(
+		'src' => 'android-light/',
+		'spriteImageName' => 'android-iconography-large-light',
+		'spriteCssName' => 'android-iconography-large-light',
+		'cols' => 10,
+		'height' => 32,
+		'width' => 32,
+		'dx' => 48.0,
+		'dy' => 48.0,
+		'x' => 0,
+		'y' => 0,
+		'prefix' => '.icon-large-light',
+		'xStart' => 0,
+	),
+/**/
 /* glyph icon-large */
 	array(
 		'src' => 'glyphicons/',
@@ -136,13 +152,13 @@ function sprite($spriteImageName, $spriteCssName, $cols, $height, $width, $dx, $
 
 	$dir = scandir(BASE_DIR.$src);
 
-	$table.= '<table><thead><tr><th colspan="'.$cols.'">'.$spriteCssName.' '.$prefix.'</th></tr></thead><tbody><tr>';
-	$ob = ob_start();
+	$table.= '<table><thead><tr><th colspan="'.$cols.'">'.$prefix.'</th></tr></thead><tbody><tr>';
+	$echo = '';
 
 	$background = 'background-image: url("../img/'.$spriteImageName.'.png");';
 
-	echo $prefix.' { width: '.$width.'px; height: '.$height.'px; }';
-	echo "\n";
+	$echo.= $prefix.' { width: '.$width.'px; height: '.$height.'px; }';
+	$echo.= "\n";
 
 	$img = imagetransparent($cols*$dx+$xStart, (round(count($dir)/$cols)+1)*$dy);
 
@@ -190,8 +206,8 @@ function sprite($spriteImageName, $spriteCssName, $cols, $height, $width, $dx, $
 		$name = $m[2];
 		$name = str_replace('_', '-', $name);
 
-		echo $prefix.'.icon-'.$name.' { '.$background.' background-position: '.(-$newX).'px '.(-$newY).'px; }';
-		echo "\n";
+		$echo.= $prefix.'.icon-'.$name.' { '.$background.' background-position: '.(-$newX).'px '.(-$newY).'px; }';
+		$echo.= "\n";
 
 		$table.= '<td title="'.$prefix.'.icon-'.$name.'"><i class="'.str_replace('.', '', $prefix).' icon-'.$name.'"></i></td>';
 
@@ -204,7 +220,7 @@ function sprite($spriteImageName, $spriteCssName, $cols, $height, $width, $dx, $
 			$table.= '</tr><tr>';
 		}
 	}
-	$css = ob_get_clean();
+	$css = $echo;
 	$table.= '</tr></tbody></table>';
 
 	file_put_contents(BUILD_DIR.'css/'.$spriteCssName.'.css', $css);
@@ -215,8 +231,8 @@ function sprite($spriteImageName, $spriteCssName, $cols, $height, $width, $dx, $
 	else
 		$saved = imagepng($img, BUILD_DIR.'img/'.$spriteImageName.'.png');
 
-	if ($saved) echo 'sprite created '.$spriteCssName.' <br />';
-	else echo 'sprite failed '.$spriteCssName.' <br />';
+	if ($saved) echo 'sprite created '.(class_exists('Imagick') ?'Imagick' :'').' '.$spriteCssName.' <br />';
+	else echo 'sprite failed '.(class_exists('Imagick') ?'Imagick' :'').' '.$spriteCssName.' <br />';
 
 }
 
