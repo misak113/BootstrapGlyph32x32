@@ -112,16 +112,21 @@ $types = array(
 );
 
 function imagetransparent($width, $height) {
-	$trans = @imagecreatefrompng(__DIR__.'/transparent.png');
-	list($old_width, $old_height) = getimagesize(__DIR__.'/transparent.png');
-	$trans2 = imagecreatetruecolor($width, $height);
-	// Resize
-	$resized = imagecopyresized($trans2, $trans, 0, 0, 0, 0, $width, $height, $old_width, $old_height);
-	imagecolortransparent($trans2, imagecolorallocate($trans2, 0,0,0));
-	return $trans2;
+	if (class_exists('Imagick')) {
+		$trans = new Imagick(__DIR__.'/transparent.png');
+		$trans->adaptiveResizeImage($width, $height);
+		return $trans;
+	
+	} else {
+		$trans = @imagecreatefrompng(__DIR__.'/transparent.png');
+		list($old_width, $old_height) = getimagesize(__DIR__.'/transparent.png');
+		$trans2 = imagecreatetruecolor($width, $height);
+		// Resize
+		$resized = imagecopyresized($trans2, $trans, 0, 0, 0, 0, $width, $height, $old_width, $old_height);
+		imagecolortransparent($trans2, imagecolorallocate($trans2, 0,0,0));
+		return $trans2;
+	}
 }
-//header('content-type: image/png');
-//imagepng(imagetransparent(100, 100));die();
 
 $table = '';
 $links = '<link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet">';
@@ -147,23 +152,38 @@ function sprite($spriteImageName, $spriteCssName, $cols, $height, $width, $dx, $
 		$filename = BASE_DIR.$src.$file;
 		$newX = round(($x-2+$xStart));
 		$newY = round(($y-3));
-		// image
-		$icon = @imagecreatefrompng($filename);
-		if (!$icon) continue;
 
-		// Get new sizes
-		list($old_width, $old_height) = getimagesize($filename);
-		$newwidth = $width;
-		$newheight = $height;
-		// Load
-		if (true || $newwidth != $old_width) {
-			$thumbIcon = imagetransparent($newwidth, $newheight);
-			// Resize
-			$resized = imagecopyresized($thumbIcon, $icon, 0, 0, 0, 0, $newwidth, $newheight, $old_width, $old_height);
-			$icon = $thumbIcon;
+
+		if (class_exists('Imagick')) {
+			// image
+			try {
+				$icon = new Imagick($filename);
+			} catch (Exception $e) { continue; }
+
+			$icon->adaptiveResizeImage($width, $height);
+			// append
+			$img->compositeImage($icon, Imagick::COMPOSITE_DSTIN, $newX, $newY);
+
+		} else {
+			// image
+			$icon = @imagecreatefrompng($filename);
+			if (!$icon) continue;
+
+			// Get new sizes
+			list($old_width, $old_height) = getimagesize($filename);
+			$newwidth = $width;
+			$newheight = $height;
+			// Load
+			if (true || $newwidth != $old_width) {
+				$thumbIcon = imagetransparent($newwidth, $newheight);
+				// Resize
+				$resized = imagecopyresized($thumbIcon, $icon, 0, 0, 0, 0, $newwidth, $newheight, $old_width, $old_height);
+				$icon = $thumbIcon;
+			}
+			// append
+			$merged = imagecopymerge($img, $icon, $newX, $newY, 0, 0, $newwidth, $newheight, 100);
 		}
-		// append
-		$merged = imagecopymerge($img, $icon, $newX, $newY, 0, 0, $newwidth, $newheight, 100);
+
 
 		preg_match('~^([a-zA-Z]+_)?\d+_(.+).png$~', $file, $m);
 		if (!isset($m[2])) { continue; }
@@ -190,12 +210,13 @@ function sprite($spriteImageName, $spriteCssName, $cols, $height, $width, $dx, $
 	file_put_contents(BUILD_DIR.'css/'.$spriteCssName.'.css', $css);
 	$links.= '<link rel="stylesheet" href="./css/'.$spriteCssName.'.css" />';
 
-	//header('content-type: image/png');
-	//imagepng($img);die();
-	$saved = imagepng($img, BUILD_DIR.'img/'.$spriteImageName.'.png');
+	if (class_exists('Imagick')) 
+		$saved = $img->writeImage('./'.$spriteImageName.'.png');
+	else
+		$saved = imagepng($img, BUILD_DIR.'img/'.$spriteImageName.'.png');
 
-	if ($saved) echo 'sprite created '.$spriteImageName.' <br />';
-	else echo 'sprite failed '.$spriteImageName.' <br />';
+	if ($saved) echo 'sprite created '.$spriteCssName.' <br />';
+	else echo 'sprite failed '.$spriteCssName.' <br />';
 
 }
 
